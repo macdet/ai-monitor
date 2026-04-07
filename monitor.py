@@ -12,6 +12,8 @@ def monitor_system():
     
     # 1. Ollama Check
     ollama = get_ollama_data()
+    print(ollama)
+
     if ollama["status"] == "error":
         alerts.append(f"🔴 Ollama API Fehler: {ollama['message']}")
     else:

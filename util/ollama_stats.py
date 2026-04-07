@@ -1,97 +1,56 @@
-from __future__ import annotations
-
-import json
-import logging
 import os
 import requests
-from typing import Any, Dict, List
+import logging
+from typing import Any, Dict
 
 logger = logging.getLogger(__name__)
 
-def _fetch_ollama_data(endpoint: str) -> Dict[str, Any]:
+def get_ollama_data() -> Dict[str, Any]:
     """
-    Führt eine GET-Anfrage an die Ollama-API durch und gibt die Antwort als JSON zurück.
-
-    Parameter:
-      - endpoint: Der API-Endpunkt (z.B. '/api/ps')
-
-    Rückgabe:
-      - Ein Dictionary mit den entsprechenden JSON-Antworten
-
-    Raises:
-      - requests.RequestException: Bei Netzwerkfehlern oder ungültigen Antworten
+    Abfrage der Ollama API nach den Projekt-Conventions.
+    Berechnet die GPU-Ratio und gibt ein flaches Dictionary zurück.
     """
+    # IP aus direnv/env laden, sonst Fallback auf Localhost
     base_url = os.getenv('OLLAMA_API_BASE', 'http://localhost:11434')
-    timeout_seconds = 5
-    url = f"{base_url}{endpoint}"
-    try:
-        response = requests.get(url, timeout=timeout_seconds)
-        response.raise_for_status()
-        return response.json()
-    except requests.RequestException as exc:
-        logger.exception("Fehler beim Abrufen von Ollama-Daten für %s: %s", endpoint, exc)
-        return {}
-
-def bytes_to_gb(value: Any) -> float:
-    """
-    Konvertiert einen Byte-Wert in GB und rundet auf drei Dezimalstellen.
-
-    Parameter:
-      - value: Der Wert in Bytes
-
-    Rückgabe:
-      - Der Wert in GB als Gleitkommazahl
-    """
-    try:
-        return round(float(value) / (1024**3), 3)
-    except (TypeError, ValueError):
-        return 0.0
-
-def get_ollama_status() -> Dict[str, Any]:
-    """
-    Liest den Ollama-Status über die Ollama-API und gibt eine detaillierte Antwort zurück.
-
-    Rückgabe:
-      - status: "ok" oder "error"
-      - message: Fehlermeldung falls vorhanden
-      - running_models: Liste der laufenden Modelle mit name, size_gb, processor, context
-    """
-    result: Dict[str, Any] = {
+    
+    result = {
         "status": "ok",
-        "message": "",
-        "running_models": []
+        "models": [],
+        "message": ""
     }
 
-    endpoint = '/api/ps'
-    data = _fetch_ollama_data(endpoint)
-
     try:
-        ps_data = data.get("models", []) if isinstance(data, dict) else []
+        # API-Endpunkt für laufende Modelle
+        response = requests.get(f"{base_url}/api/ps", timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        
+        # Ollama liefert die Liste im Key 'models'
+        for m in data.get("models", []):
+            size = m.get("size", 0)
+            vram = m.get("size_vram", 0)
+            
+            # GPU-Ratio Logik (Convention Check)
+            ratio = vram / size if size > 0 else 0
+            
+            if ratio >= 1.0:
+                proc = "100% GPU"
+            elif ratio > 0:
+                proc = f"{int(ratio * 100)}% GPU"
+            else:
+                proc = "CPU"
 
-        for model in ps_data:
-            if not isinstance(model, dict):
-                continue
-            details = model.get("details", {}) or {}
-            vram_bytes = model.get("size_vram", 0)
-            size_bytes = model.get("size", 0)
+            # Wir extrahieren nur, was wir wirklich brauchen
+            result["models"].append({
+                "name": m.get("name", "Unknown"),
+                "processor": proc,
+                "size_gb": round(size / (1024**3), 2),
+                "context": m.get("details", {}).get("parent_model", "N/A") 
+            })
 
-            gpu_ratio = float(vram_bytes) / float(size_bytes) if float(size_bytes) > 0 else 0
-            processor_status = "100% GPU" if gpu_ratio == 1.0 else f"{int(gpu_ratio*100)}% GPU"
-
-            result["running_models"].append(
-                {
-                    "name": model.get("name"),
-                    "size_gb": bytes_to_gb(size_bytes),
-                    "processor": processor_status,
-                    "context": details.get("context_length")
-                    or details.get("num_ctx")
-                    or model.get("context_length"),
-                }
-            )
-
-    except Exception as exc:
-        logger.exception("Fehler bei der Verarbeitung von Ollama /api/ps-Daten: %s", exc)
+    except Exception as e:
+        logger.error(f"Ollama Abfrage fehlgeschlagen: {e}")
         result["status"] = "error"
-        result["message"] += f"Fehler bei Ollama /api/ps: {exc}\n"
+        result["message"] = str(e)
 
     return result
