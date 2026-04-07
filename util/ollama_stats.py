@@ -2,9 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import subprocess
-import requests  # Importieren des requests-Moduls
 from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
@@ -30,9 +28,14 @@ def get_ollama_stats() -> dict[str, list[dict[str, Any]]]:
     result: dict[str, list[dict[str, Any]]] = {"running": [], "available": []}
 
     try:
-        ps_resp = requests.get(f"{base_url}/api/ps", timeout=timeout_seconds)
-        ps_resp.raise_for_status()
-        ps_data = ps_resp.json()
+        ps_resp = subprocess.run(
+            ["curl", "-s", f"{base_url}/api/ps"],
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+            check=True
+        )
+        ps_data = json.loads(ps_resp.stdout)
         running_models = ps_data.get("models", []) if isinstance(ps_data, dict) else []
 
         for model in running_models:
@@ -52,15 +55,20 @@ def get_ollama_stats() -> dict[str, list[dict[str, Any]]]:
                 }
             )
 
-    except requests.RequestException as exc:
+    except subprocess.CalledProcessError as exc:
         logger.exception("Fehler bei Ollama /api/ps: %s", exc)
     except (ValueError, TypeError, KeyError) as exc:
         logger.exception("Ungültige Antwort von Ollama /api/ps: %s", exc)
 
     try:
-        tags_resp = requests.get(f"{base_url}/api/tags", timeout=timeout_seconds)
-        tags_resp.raise_for_status()
-        tags_data = tags_resp.json()
+        tags_resp = subprocess.run(
+            ["curl", "-s", f"{base_url}/api/tags"],
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+            check=True
+        )
+        tags_data = json.loads(tags_resp.stdout)
         available_models = tags_data.get("models", []) if isinstance(tags_data, dict) else []
 
         for model in available_models:
@@ -73,7 +81,7 @@ def get_ollama_stats() -> dict[str, list[dict[str, Any]]]:
                 }
             )
 
-    except requests.RequestException as exc:
+    except subprocess.CalledProcessError as exc:
         logger.exception("Fehler bei Ollama /api/tags: %s", exc)
     except (ValueError, TypeError, KeyError) as exc:
         logger.exception("Ungültige Antwort von Ollama /api/tags: %s", exc)
@@ -108,9 +116,14 @@ def get_ollama_health() -> dict[str, Any]:
     }
 
     try:
-        ps_resp = requests.get(f"{base_url}/api/ps", timeout=timeout_seconds)
-        ps_resp.raise_for_status()
-        ps_data = ps_resp.json()
+        ps_resp = subprocess.run(
+            ["curl", "-s", f"{base_url}/api/ps"],
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+            check=True
+        )
+        ps_data = json.loads(ps_resp.stdout)
         running_models = ps_data.get("models", []) if isinstance(ps_data, dict) else []
 
         for model in running_models:
@@ -130,7 +143,7 @@ def get_ollama_health() -> dict[str, Any]:
                 }
             )
 
-    except requests.RequestException as exc:
+    except subprocess.CalledProcessError as exc:
         logger.exception("Fehler bei Ollama /api/ps: %s", exc)
         result["status"] = "error"
         result["message"] = f"Fehler bei Ollama /api/ps: {exc}"
@@ -140,9 +153,14 @@ def get_ollama_health() -> dict[str, Any]:
         result["message"] = f"Ungültige Antwort von Ollama /api/ps: {exc}"
 
     try:
-        tags_resp = requests.get(f"{base_url}/api/tags", timeout=timeout_seconds)
-        tags_resp.raise_for_status()
-        tags_data = tags_resp.json()
+        tags_resp = subprocess.run(
+            ["curl", "-s", f"{base_url}/api/tags"],
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+            check=True
+        )
+        tags_data = json.loads(tags_resp.stdout)
         available_models = tags_data.get("models", []) if isinstance(tags_data, dict) else []
 
         for model in available_models:
@@ -155,7 +173,7 @@ def get_ollama_health() -> dict[str, Any]:
                 }
             )
 
-    except requests.RequestException as exc:
+    except subprocess.CalledProcessError as exc:
         logger.exception("Fehler bei Ollama /api/tags: %s", exc)
         if result["status"] == "ok":
             result["status"] = "error"
