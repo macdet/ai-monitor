@@ -1,0 +1,15 @@
+# AI-Monitor Project
+
+## Stack
+- Debian 13 (Trixie), Python 3.13, uv, direnv
+- Docker Compose Stack auf 192.168.178.182 (ai-stack_ai-stack bridge)
+- Container: ollama, anythingllm, open-webui, qdrant, searxng, homepage
+- Ollama API: http://localhost:11434
+- GPU: AMD RX 7900 XTX, ROCm 7.8.0, rocm-smi verfügbar
+- ntfy: http://192.168.178.183:7777 (mit Auth)
+
+## Coding Rules
+- Python 3.13, keine unnötigen Dependencies
+- CLI-first, minimal
+- rocm-smi immer mit LC_ALL=C LANG=C aufrufen (Locale-Bug)
+- Fehler immer loggen, nie still schlucken
