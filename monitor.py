@@ -69,6 +69,9 @@ def monitor_system() -> None:
                 logger.info(f"GPU {gpu_id}: VRAM gesamt: {stats['vram_total']} GB, "
                             f"VRAM verwendet: {stats['vram_used']} GB, "
                             f"VRAM Ratio: {stats['vram_ratio']:.2f}")
+        elif isinstance(gpu_stats, float):
+            # Wenn nur ein Float zurückgegeben wird (z.B. Gesamtverbrauch)
+            logger.info(f"GPU-VRAM-Verbrauch: {gpu_stats:.2f} GB")
         else:
             logger.warning("GPU-Statistiken haben falsches Format: %s", gpu_stats)
             alerts.append(f"⚠️ GPU-Statistiken haben falsches Format: {gpu_stats}")
