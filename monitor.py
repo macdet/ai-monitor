@@ -21,7 +21,7 @@ def check_ollama_status() -> List[str]:
         status = get_ollama_status()
         if status["status"] == "error":
             logger.error("Fehler beim Abrufen des Ollama-Status: %s", status["message"])
-            alerts.append(f"Fehler beim Abrufen des Ollama-Status: {status['message']}")
+            alerts.append(f"❌ Fehler beim Abrufen des Ollama-Status: {status['message']}")
         else:
             # Ausgabe der Statusinformationen
             try:
@@ -39,10 +39,10 @@ def check_ollama_status() -> List[str]:
                     logger.info(f"Name: {model['name']}, Größe: {model['size']} GB")
             except Exception as exc:
                 logger.exception("Fehler beim Abrufen der Ollama-Statistiken: %s", exc)
-                alerts.append(f"Fehler beim Abrufen der Ollama-Statistiken: {exc}")
+                alerts.append(f"⚠️ Fehler beim Abrufen der Ollama-Statistiken: {exc}")
 
     except Exception as exc:
         logger.exception("Fehler beim Überprüfen des Ollama-Status: %s", exc)
-        alerts.append(f"Fehler beim Überprüfen des Ollama-Status: {exc}")
+        alerts.append(f"❌ Fehler beim Überprüfen des Ollama-Status: {exc}")
 
     return alerts

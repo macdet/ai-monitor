@@ -8,30 +8,34 @@ from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
-def _fetch_ollama_data(endpoint: str) -> dict[str, Any]:
+def _fetch_ollama_data(endpoints: List[str]) -> Dict[str, Any]:
     """
-    Führt eine GET-Anfrage an die Ollama-API durch und gibt die Antwort als JSON zurück.
+    Führt mehrere GET-Anfragen an die Ollama-API durch und gibt die Antworten als JSON zurück.
 
     Parameter:
-      - endpoint: Der API-Endpunkt (z.B. '/api/ps', '/api/tags')
+      - endpoints: Liste der API-Endpunkte (z.B. ['/api/ps', '/api/tags'])
 
     Rückgabe:
-      - Die JSON-Antwort des API-Calls
+      - Ein Dictionary mit den Endpunkten als Schlüssel und den entsprechenden JSON-Antworten als Werte
 
     Raises:
       - requests.RequestException: Bei Netzwerkfehlern oder ungültigen Antworten
     """
     base_url = os.getenv('OLLAMA_API_BASE', 'http://localhost:11434')
-    url = f"{base_url}{endpoint}"
     timeout_seconds = 5
+    results: Dict[str, Any] = {}
 
-    try:
-        response = requests.get(url, timeout=timeout_seconds)
-        response.raise_for_status()
-        return response.json()
-    except requests.RequestException as exc:
-        logger.exception("Fehler beim Abrufen von Ollama-Daten: %s", exc)
-        raise
+    for endpoint in endpoints:
+        url = f"{base_url}{endpoint}"
+        try:
+            response = requests.get(url, timeout=timeout_seconds)
+            response.raise_for_status()
+            results[endpoint] = response.json()
+        except requests.RequestException as exc:
+            logger.exception("Fehler beim Abrufen von Ollama-Daten für %s: %s", endpoint, exc)
+            results[endpoint] = {}
+
+    return results
 
 
 def bytes_to_gb(value: Any) -> float:
@@ -67,8 +71,11 @@ def get_ollama_status() -> dict[str, Any]:
         "available_models": []
     }
 
+    endpoints = ['/api/ps', '/api/tags']
+    data = _fetch_ollama_data(endpoints)
+
     try:
-        ps_data = _fetch_ollama_data('/api/ps')
+        ps_data = data.get('/api/ps', {})
         running_models = ps_data.get("models", []) if isinstance(ps_data, dict) else []
 
         for model in running_models:
@@ -78,8 +85,9 @@ def get_ollama_status() -> dict[str, Any]:
             vram_bytes = model.get("size_vram", 0)
             size_bytes = model.get("size", 0)
 
-            processor_status = "GPU" if float(vram_bytes) > 0 else "CPU"
-            if float(vram_bytes) < float(size_bytes):
+            gpu_ratio = (float(vram_bytes) / float(size_bytes)) * 100 if float(size_bytes) > 0 else 0
+            processor_status = "GPU" if gpu_ratio >= 50 else "CPU"
+            if gpu_ratio < 50 and gpu_ratio > 0:
                 processor_status = "Partial GPU/CPU"
 
             result["running_models"].append(
@@ -94,13 +102,13 @@ def get_ollama_status() -> dict[str, Any]:
                 }
             )
 
-    except requests.RequestException as exc:
-        logger.exception("Fehler bei Ollama /api/ps: %s", exc)
+    except Exception as exc:
+        logger.exception("Fehler bei der Verarbeitung von Ollama /api/ps-Daten: %s", exc)
         result["status"] = "error"
-        result["message"] = f"Fehler bei Ollama /api/ps: {exc}"
+        result["message"] += f"Fehler bei Ollama /api/ps: {exc}\n"
 
     try:
-        tags_data = _fetch_ollama_data('/api/tags')
+        tags_data = data.get('/api/tags', {})
         available_models = tags_data.get("models", []) if isinstance(tags_data, dict) else []
 
         for model in available_models:
@@ -113,10 +121,10 @@ def get_ollama_status() -> dict[str, Any]:
                 }
             )
 
-    except requests.RequestException as exc:
-        logger.exception("Fehler bei Ollama /api/tags: %s", exc)
+    except Exception as exc:
+        logger.exception("Fehler bei der Verarbeitung von Ollama /api/tags-Daten: %s", exc)
         if result["status"] == "ok":
             result["status"] = "error"
-            result["message"] = f"Fehler bei Ollama /api/tags: {exc}"
+            result["message"] += f"Fehler bei Ollama /api/tags: {exc}\n"
 
     return result
