@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import subprocess
+import requests  # Importieren des requests-Moduls
 from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
