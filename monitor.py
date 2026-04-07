@@ -63,11 +63,15 @@ def monitor_system() -> None:
     # GPU-Status abrufen
     try:
         gpu_stats = get_gpu_stats()
-        logger.info("GPU-Status:")
-        for gpu_id, stats in gpu_stats.items():
-            logger.info(f"GPU {gpu_id}: VRAM gesamt: {stats['vram_total']} GB, "
-                        f"VRAM verwendet: {stats['vram_used']} GB, "
-                        f"VRAM Ratio: {stats['vram_ratio']:.2f}")
+        if isinstance(gpu_stats, dict):
+            logger.info("GPU-Status:")
+            for gpu_id, stats in gpu_stats.items():
+                logger.info(f"GPU {gpu_id}: VRAM gesamt: {stats['vram_total']} GB, "
+                            f"VRAM verwendet: {stats['vram_used']} GB, "
+                            f"VRAM Ratio: {stats['vram_ratio']:.2f}")
+        else:
+            logger.warning("GPU-Statistiken haben falsches Format: %s", gpu_stats)
+            alerts.append(f"⚠️ GPU-Statistiken haben falsches Format: {gpu_stats}")
     except Exception as exc:
         logger.exception("Fehler beim Abrufen des GPU-Status: %s", exc)
         alerts.append(f"⚠️ Fehler beim Abrufen des GPU-Status: {exc}")
