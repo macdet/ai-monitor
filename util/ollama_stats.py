@@ -185,3 +185,71 @@ def get_ollama_health() -> dict[str, Any]:
             result["message"] = f"Ungültige Antwort von Ollama /api/tags: {exc}"
 
     return result
+
+
+def get_ollama_status() -> dict[str, Any]:
+    """
+    Liest den Ollama-Status über ollama ps.
+
+    Rückgabe:
+      - status: "ok" oder "error"
+      - message: Fehlermeldung falls vorhanden
+      - models: Liste der Modelle mit name, size, processor und context_length
+      - warning: True, wenn ein Modell nicht auf '100% GPU' läuft
+    """
+    base_url = "http://localhost:11434"
+    timeout_seconds = 5
+
+    def bytes_to_gb(value: Any) -> float:
+        try:
+            return round(float(value) / (1024**3), 3)
+        except (TypeError, ValueError):
+            return 0.0
+
+    result: Dict[str, Any] = {
+        "status": "ok",
+        "message": "",
+        "models": [],
+        "warning": False
+    }
+
+    try:
+        ps_resp = subprocess.run(
+            ["curl", "-s", f"{base_url}/api/ps"],
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+            check=True
+        )
+        ps_data = json.loads(ps_resp.stdout)
+        running_models = ps_data.get("models", []) if isinstance(ps_data, dict) else []
+
+        for model in running_models:
+            if not isinstance(model, dict):
+                continue
+            details = model.get("details", {}) or {}
+            vram_bytes = model.get("size_vram", 0)
+            processor_status = "100% GPU" if float(vram_bytes or 0) > 0 else "CPU"
+            result["models"].append(
+                {
+                    "name": model.get("name"),
+                    "size": bytes_to_gb(model.get("size")),
+                    "processor": processor_status,
+                    "context_length": details.get("context_length")
+                    or details.get("num_ctx")
+                    or model.get("context_length"),
+                }
+            )
+            if processor_status != "100% GPU":
+                result["warning"] = True
+
+    except subprocess.CalledProcessError as exc:
+        logger.exception("Fehler bei Ollama /api/ps: %s", exc)
+        result["status"] = "error"
+        result["message"] = f"Fehler bei Ollama /api/ps: {exc}"
+    except (ValueError, TypeError, KeyError) as exc:
+        logger.exception("Ungültige Antwort von Ollama /api/ps: %s", exc)
+        result["status"] = "error"
+        result["message"] = f"Ungültige Antwort von Ollama /api/ps: {exc}"
+
+    return result
