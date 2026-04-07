@@ -12,7 +12,6 @@ def monitor_system():
     
     # 1. Ollama Check
     ollama = get_ollama_data()
-    print(ollama)
 
     if ollama["status"] == "error":
         alerts.append(f"🔴 Ollama API Fehler: {ollama['message']}")
@@ -42,7 +41,6 @@ def monitor_system():
                 alerts.append(f"🟡 Warnung: GPU VRAM-Verbrauch ist hoch: {gpu['vram_ratio']:.1%}")
         else:
             logger.info("GPU VRAM: Daten nicht verfügbar")
-            alerts.append("⚠️ GPU VRAM Daten nicht verfügbar")
             
     except Exception as e:
         alerts.append(f"⚠️ GPU Check fehlgeschlagen: {e}")

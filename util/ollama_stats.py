@@ -45,7 +45,7 @@ def get_ollama_data() -> Dict[str, Any]:
                 "name": m.get("name", "Unknown"),
                 "processor": proc,
                 "size_gb": round(size / (1024**3), 2),
-                "context": m.get("details", {}).get("parent_model", "N/A") 
+                "context": m.get("context_length", 0) 
             })
 
     except Exception as e:
