@@ -34,12 +34,14 @@ def monitor_system():
         # Logge die GPU-Statistiken
         if gpu["vram_total"] is not None:
             logger.info(f"GPU VRAM: {gpu['vram_used']:.2f} / {gpu['vram_total']:.2f} GB ({gpu['vram_ratio']:.1%})")
+            
+            # Nur bei Überlastung (>95%) sende einen Alert
+            if gpu["vram_ratio"] is not None and gpu["vram_ratio"] > 0.95:
+                alerts.append(f"🟡 Warnung: GPU VRAM-Verbrauch ist hoch: {gpu['vram_ratio']:.1%}")
         else:
             logger.info("GPU VRAM: Daten nicht verfügbar")
+            alerts.append("⚠️ GPU VRAM Daten nicht verfügbar")
             
-        # Überprüfe auf Überlastung (>95%)
-        if gpu["vram_ratio"] is not None and gpu["vram_ratio"] > 0.95:
-            alerts.append(f"🟡 Warnung: GPU VRAM-Verbrauch ist hoch: {gpu['vram_ratio']:.1%}")
     except Exception as e:
         alerts.append(f"⚠️ GPU Check fehlgeschlagen: {e}")
 
