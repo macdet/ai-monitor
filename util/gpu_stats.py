@@ -78,8 +78,8 @@ def get_gpu_stats() -> dict[str, float | None]:
         vram_total_mb = first_value_by_terms(first_gpu, ("total", "vram"))
 
         # Debug-Ausgabe
-        if vram_total_mb is not None:
-            print(f"DEBUG ROHWERT: {vram_total_mb}")
+        # if vram_total_mb is not None:
+        #     print(f"DEBUG ROHWERT: {vram_total_mb}")
 
         # Umrechnung in GB mit korrekter Division
         # Versuche zunächst 1024^3 (GB), dann 1024^2 (MB) wenn nötig
@@ -97,8 +97,8 @@ def get_gpu_stats() -> dict[str, float | None]:
                 vram_total_gb = vram_total_mb / (1024**2)
             
             # Für RX 7900 XTX sollte vram_total 24.0 ergeben
-            if vram_total_gb is not None and abs(vram_total_gb - 24.0) > 1:
-                print(f"DEBUG: Ungewöhnlicher Wert: {vram_total_gb} GB")
+            # if vram_total_gb is not None and abs(vram_total_gb - 24.0) > 1:
+            #     print(f"DEBUG: Ungewöhnlicher Wert: {vram_total_gb} GB")
         
         # Berechne das Verhältnis
         vram_ratio = vram_used_gb / vram_total_gb if vram_used_gb is not None and vram_total_gb is not None and vram_total_gb > 0 else None

@@ -45,15 +45,40 @@ def get_docker_stats() -> list[dict[str, Any]]:
         if name == "test-container":
             results.append(fallback(name, "Container exited with error"))
             continue
-            
+
         try:
+            # Führe docker inspect ohne check=True aus, um Fehler zu behandeln
             proc = subprocess.run(
                 ["docker", "inspect", name],
-                check=True,
+                check=False,  # Wichtig: nicht check=True verwenden
                 capture_output=True,
                 text=True,
                 timeout=10,
             )
+
+            # Prüfe den Exit-Code für erfolgreiche und fehlgeschlagene Abfragen
+            if proc.returncode != 0:
+                # Container existiert nicht
+                if (
+                    "No such object" in proc.stderr
+                    or "No such container" in proc.stderr
+                ):
+                    logger.info(f"Container {name} nicht gefunden (nicht existent)")
+                    results.append(
+                        {
+                            "name": name,
+                            "status": "missing",
+                            "health": "none",
+                            "restart_count": None,
+                            "error": "Container nicht gefunden",
+                        }
+                    )
+                else:
+                    # Andere Fehler beim Inspect
+                    msg = f"docker inspect fehlgeschlagen (exit={proc.returncode}) - {proc.stderr}"
+                    logger.exception("%s für '%s'", msg, name)
+                    results.append(fallback(name, msg))
+                continue
 
             inspect_data = json.loads(proc.stdout)
             if not inspect_data:
@@ -75,11 +100,6 @@ def get_docker_stats() -> list[dict[str, Any]]:
                     "error": None,
                 }
             )
-
-        except subprocess.CalledProcessError as exc:
-            msg = f"docker inspect fehlgeschlagen (exit={exc.returncode})"
-            logger.exception("%s für '%s'", msg, name)
-            results.append(fallback(name, msg))
 
         except subprocess.TimeoutExpired:
             msg = "docker inspect timeout"

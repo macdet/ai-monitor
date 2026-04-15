@@ -1,46 +1,12 @@
 from __future__ import annotations
 
-import json
 import logging
 import os
-from typing import Any, List
+from typing import List
 
 import requests
 
 logger = logging.getLogger(__name__)
-
-def build_alerts(stats: dict[str, Any]) -> list[str]:
-    """Erzeugt Alert-Texte aus Docker- und Ollama-Statusdaten."""
-    alerts: list[str] = []
-
-    docker_stats = stats.get("docker", [])
-    for container in docker_stats:
-        if not isinstance(container, dict):
-            continue
-
-        name = container.get("name", "unknown")
-        status = container.get("status", "unknown")
-        health = container.get("health", "none")
-        error = container.get("error")
-
-        if error:
-            alerts.append(f"⚠️ Docker {name}: Fehler bei Abfrage ({error})")
-            continue
-
-        if status != "running":
-            alerts.append(f"⚠️ Docker {name}: Status ist {status}")
-
-        if health == "unhealthy":
-            alerts.append(f"⚠️ Docker {name}: Health ist unhealthy")
-
-    ollama_stats = stats.get("ollama", {})
-    running_models = (
-        ollama_stats.get("running", []) if isinstance(ollama_stats, dict) else []
-    )
-    if not running_models:
-        alerts.append("❌ Ollama: Kein Modell läuft aktuell (/api/ps ist leer)")
-
-    return alerts
 
 
 def send_ntfy_alerts(alerts: list[str]) -> bool:
