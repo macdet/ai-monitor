@@ -49,6 +49,9 @@ def build_monitor_payload() -> dict[str, Any]:
     gpu_stats = get_gpu_stats()
     decision = thermal_policy.evaluate(gpu_stats)
 
+    # Neuer Code für model_changed
+    model_changed = current_model != _last_loaded_model
+
     payload: dict[str, Any] = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "ollama": {
@@ -67,6 +70,7 @@ def build_monitor_payload() -> dict[str, Any]:
             "model_unloaded": False,
             "unloaded_model": None,
         },
+        "model_changed": model_changed,  # Neues Feld
     }
 
     if decision.state != _last_state:
@@ -126,6 +130,7 @@ def append_history_entry(payload: dict[str, Any]) -> None:
         "warning": thermal.get("warning"),
         "model_unloaded": actions.get("model_unloaded"),
         "unloaded_model": actions.get("unloaded_model"),
+        "model_changed": payload.get("model_changed"),  # Neues Feld in Historie
     }
 
     with HISTORY_FILE.open("a", encoding="utf-8") as f:
