@@ -84,24 +84,20 @@ def analyze_history() -> None:
     unloaded_count = sum(1 for e in entries if e.get("model_unloaded") is True)
     print(f"\nEinträge mit entladenem Modell: {unloaded_count}")
 
+    # Zähle Modellwechsel
     model_changes = 0
-    previous_model = object()
+    previous_model = None
     for entry in entries:
         current_model = entry.get("model")
-        if previous_model is not object() and current_model != previous_model:
+        if previous_model is not None and current_model != previous_model:
             model_changes += 1
         previous_model = current_model
 
-    # sauberer zählen:
-    model_changes = sum(
-        1
-        for prev, curr in zip(
-            [e.get("model") for e in entries],
-            [e.get("model") for e in entries][1:],
-        )
-        if prev != curr
-    )
     print(f"Modellwechsel erkannt: {model_changes}")
+
+    # Zähle explizit markierte Modellwechsel
+    explicit_model_changes = sum(1 for e in entries if e.get("model_changed") is True)
+    print(f"Explizit markierte Modellwechsel: {explicit_model_changes}")
 
 
 if __name__ == "__main__":
