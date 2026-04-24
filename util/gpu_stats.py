@@ -13,10 +13,17 @@ def get_gpu_stats() -> dict[str, float | None]:
     """
     Liest GPU-Daten über rocm-smi aus.
 
-    Aufruf immer mit LC_ALL=C und LANG=C, damit Dezimalpunkte
-    zuverlässig als "." geliefert werden (Locale-Bug vermeiden).
+    Rückgabe:
+      - vram_used: GiB
+      - vram_total: GiB
+      - vram_ratio: 0..1
+      - temperature_edge: °C
+      - temperature_hotspot: °C
+      - gpu_use: %
+      - power_w: W
+
+    Diese Funktion misst nur. Sie trifft keine Policy-Entscheidung.
     """
-    # Verwende den Pfad aus der Umgebung, falls gesetzt, sonst den Standardpfad
     rocm_smi_path = os.getenv("ROCM_SMI_PATH", "/opt/rocm/bin/rocm-smi")
     command = [
         rocm_smi_path,
@@ -32,15 +39,22 @@ def get_gpu_stats() -> dict[str, float | None]:
         "vram_used": None,
         "vram_total": None,
         "vram_ratio": None,
+        "temperature_edge": None,
+        "temperature_hotspot": None,
+        "gpu_use": None,
+        "power_w": None,
     }
 
     def to_float(value: Any) -> float | None:
         if value is None:
             return None
+
         text = str(value).strip().replace(",", ".")
         number_chars = "".join(ch for ch in text if ch.isdigit() or ch in ".-")
+
         if not number_chars:
             return None
+
         try:
             return float(number_chars)
         except ValueError:
@@ -52,6 +66,34 @@ def get_gpu_stats() -> dict[str, float | None]:
             if all(term in key_l for term in terms):
                 return to_float(value)
         return None
+
+    def first_value_by_alternatives(
+        payload: dict[str, Any],
+        alternatives: list[tuple[str, ...]],
+    ) -> float | None:
+        for terms in alternatives:
+            value = first_value_by_terms(payload, terms)
+            if value is not None:
+                return value
+        return None
+
+    def first_gpu_payload(data: dict[str, Any]) -> dict[str, Any] | None:
+        for value in data.values():
+            if isinstance(value, dict):
+                return value
+        return None
+
+    def convert_vram_to_gib(raw_value: float | None) -> float | None:
+        if raw_value is None:
+            return None
+
+        gib = raw_value / (1024**3)
+
+        # Fallback, falls die Quelle unerwartet nicht in Bytes liefert
+        if gib > 100:
+            gib = raw_value / 1024
+
+        return gib
 
     try:
         env = os.environ.copy()
@@ -66,48 +108,92 @@ def get_gpu_stats() -> dict[str, float | None]:
             timeout=10,
             env=env,
         )
+
         data = json.loads(proc.stdout)
         if not isinstance(data, dict) or not data:
             raise ValueError("Leere/ungültige JSON-Antwort von rocm-smi")
 
-        first_gpu = next((v for v in data.values() if isinstance(v, dict)), None)
+        first_gpu = first_gpu_payload(data)
         if not isinstance(first_gpu, dict):
             raise ValueError("Keine GPU-Daten in rocm-smi JSON gefunden")
 
-        vram_used_mb = first_value_by_terms(first_gpu, ("used", "vram"))
-        vram_total_mb = first_value_by_terms(first_gpu, ("total", "vram"))
+        # VRAM
+        vram_used_raw = first_value_by_alternatives(
+            first_gpu,
+            [
+                ("used", "vram"),
+                ("vram", "used"),
+            ],
+        )
+        vram_total_raw = first_value_by_alternatives(
+            first_gpu,
+            [
+                ("total", "vram"),
+                ("vram", "total"),
+            ],
+        )
 
-        # Debug-Ausgabe
-        # if vram_total_mb is not None:
-        #     print(f"DEBUG ROHWERT: {vram_total_mb}")
+        vram_used_gib = convert_vram_to_gib(vram_used_raw)
+        vram_total_gib = convert_vram_to_gib(vram_total_raw)
 
-        # Umrechnung in GB mit korrekter Division
-        # Versuche zunächst 1024^3 (GB), dann 1024^2 (MB) wenn nötig
-        vram_used_gb = None
-        vram_total_gb = None
-        
-        if vram_used_mb is not None and vram_total_mb is not None:
-            # Erste Versuch mit 1024^3
-            vram_used_gb = vram_used_mb / (1024**3)
-            vram_total_gb = vram_total_mb / (1024**3)
-            
-            # Wenn das Ergebnis zu hoch ist, versuche 1024^2
-            if vram_total_gb is not None and vram_total_gb > 100:
-                vram_used_gb = vram_used_mb / (1024**2)
-                vram_total_gb = vram_total_mb / (1024**2)
-            
-            # Für RX 7900 XTX sollte vram_total 24.0 ergeben
-            # if vram_total_gb is not None and abs(vram_total_gb - 24.0) > 1:
-            #     print(f"DEBUG: Ungewöhnlicher Wert: {vram_total_gb} GB")
-        
-        # Berechne das Verhältnis
-        vram_ratio = vram_used_gb / vram_total_gb if vram_used_gb is not None and vram_total_gb is not None and vram_total_gb > 0 else None
+        vram_ratio = (
+            vram_used_gib / vram_total_gib
+            if vram_used_gib is not None and vram_total_gib not in (None, 0)
+            else None
+        )
 
-        # Rückgabe im erwarteten Format
+        # Temperatur
+        temperature_edge = first_value_by_alternatives(
+            first_gpu,
+            [
+                ("temperature", "edge"),
+                ("temp", "edge"),
+                ("temperature", "current"),
+                ("temp", "current"),
+            ],
+        )
+
+        temperature_hotspot = first_value_by_alternatives(
+            first_gpu,
+            [
+                ("temperature", "junction"),
+                ("temp", "junction"),
+                ("temperature", "hotspot"),
+                ("temp", "hotspot"),
+                ("temperature", "mem"),
+                ("temp", "mem"),
+            ],
+        )
+
+        # GPU-Auslastung
+        gpu_use = first_value_by_alternatives(
+            first_gpu,
+            [
+                ("gpu", "use"),
+                ("use", "gpu"),
+                ("utilization", "gpu"),
+            ],
+        )
+
+        # Leistung
+        power_w = first_value_by_alternatives(
+            first_gpu,
+            [
+                ("current", "power"),
+                ("power", "average"),
+                ("socket", "power"),
+                ("power",),
+            ],
+        )
+
         result = {
-            "vram_used": vram_used_gb,
-            "vram_total": vram_total_gb,
-            "vram_ratio": vram_ratio
+            "vram_used": vram_used_gib,
+            "vram_total": vram_total_gib,
+            "vram_ratio": vram_ratio,
+            "temperature_edge": temperature_edge,
+            "temperature_hotspot": temperature_hotspot,
+            "gpu_use": gpu_use,
+            "power_w": power_w,
         }
 
     except FileNotFoundError:
