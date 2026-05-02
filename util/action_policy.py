@@ -73,3 +73,11 @@ class ActionPolicy:
             actions.append(NoOp(reason="System stabil, keine Aktionen erforderlich."))
 
         return actions
+
+
+def apply_action_policy() -> None:
+    """
+    Placeholder function for applying action policy.
+    Actual implementation would be in the monitor context.
+    """
+    pass
