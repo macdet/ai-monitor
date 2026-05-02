@@ -1,176 +1,138 @@
+#!/usr/bin/env python3
 from __future__ import annotations
 
-import logging
-import os
+import argparse
+import json
+import signal
+import sys
 import time
+import urllib.request
+from pathlib import Path
 from typing import Any
 
-from util.alerts import send_ntfy_alerts
-from util.docker_stats import get_docker_stats
-from util.gpu_stats import get_gpu_stats
-from util.ollama_control import unload_current_ollama_model
-from util.ollama_stats import get_ollama_data
-from util.thermal_policy import ThermalPolicy
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
-logger = logging.getLogger(__name__)
-
-POLL_INTERVAL_SECONDS = int(os.getenv("AI_MONITOR_POLL_INTERVAL", "15"))
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://127.0.0.1:11434")
-
-thermal_policy = ThermalPolicy(
-    warn_temp_c=85.0,
-    critical_temp_c=90.0,
-    recover_temp_c=80.0,
-    critical_hits_needed=3,
-)
-
-_last_thermal_state: str | None = None
+from util.gpu_stats import collect_gpu_stats
+from util.docker_stats import collect_docker_stats
+from util.state_classifier import classify_snapshot
 
 
-def monitor_system() -> dict[str, Any]:
-    global _last_thermal_state
+PROJECT_DIR = Path(__file__).resolve().parent
+HISTORY_FILE = PROJECT_DIR / "history" / "monitor_history.jsonl"
+OLLAMA_PS_URL = "http://127.0.0.1:11434/api/ps"
 
-    alerts: list[str] = []
-    payload: dict[str, Any] = {
-        "ollama": None,
-        "docker": None,
-        "gpu": None,
-        "thermal": None,
-        "actions": {
-            "model_unloaded": False,
-            "unloaded_model": None,
-        },
+RUNNING = True
+
+
+def handle_stop_signal(signum: int, frame: object) -> None:
+    global RUNNING
+    RUNNING = False
+
+
+def collect_ollama_models() -> list[dict[str, Any]]:
+    try:
+        with urllib.request.urlopen(OLLAMA_PS_URL, timeout=3) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+
+        models = payload.get("models", [])
+        if isinstance(models, list):
+            return models
+
+        return []
+
+    except Exception:
+        return []
+
+
+def build_snapshot() -> dict[str, Any]:
+    gpu = collect_gpu_stats()
+
+    snapshot: dict[str, Any] = {
+        "timestamp": int(time.time()),
+        **gpu,
+        "ollama_models": collect_ollama_models(),
+        "docker": collect_docker_stats(["ollama"]),
     }
 
-    # 1. Ollama Check
-    ollama = get_ollama_data()
-    payload["ollama"] = ollama
+    snapshot["state"] = classify_snapshot(snapshot)
 
-    if ollama["status"] == "error":
-        alerts.append(f"🔴 Ollama API Fehler: {ollama['message']}")
-    else:
-        for m in ollama["models"]:
-            logger.info(
-                "Modell aktiv: %s (%s) - Context: %s",
-                m["name"],
-                m["processor"],
-                m["context"],
-            )
-            if "CPU" in m["processor"]:
-                alerts.append(f"🟡 Warnung: {m['name']} läuft auf {m['processor']}!")
+    return snapshot
 
-    # 2. Docker Check
-    try:
-        docker_stats = get_docker_stats()
-        payload["docker"] = docker_stats
+def append_snapshot(snapshot: dict[str, Any]) -> None:
+    HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
 
-        for c in docker_stats:
-            if c["status"] == "missing":
-                alerts.append(
-                    f"🔴 Container {c['name']} ist nicht vorhanden (nicht gefunden)"
-                )
-            elif c["status"] != "running" or c["health"] == "unhealthy":
-                alerts.append(
-                    f"🔴 Container {c['name']} ist {c['status']} ({c['health']})"
-                )
-    except Exception as exc:
-        alerts.append(f"⚠️ Docker Check fehlgeschlagen: {exc}")
-
-    # 3. GPU + Thermal Check
-    try:
-        gpu = get_gpu_stats()
-        payload["gpu"] = gpu
-
-        if gpu["vram_total"] is not None:
-            logger.info(
-                "GPU VRAM: %.2f / %.2f GB (%.1f%%)",
-                gpu["vram_used"],
-                gpu["vram_total"],
-                (gpu["vram_ratio"] or 0) * 100,
-            )
-        else:
-            logger.info("GPU VRAM: Daten nicht verfügbar")
-
-        logger.info(
-            "GPU Temp edge=%s hotspot=%s use=%s power=%s",
-            gpu.get("temperature_edge"),
-            gpu.get("temperature_hotspot"),
-            gpu.get("gpu_use"),
-            gpu.get("power_w"),
-        )
-
-        decision = thermal_policy.evaluate(gpu)
-        payload["thermal"] = {
-            "state": decision.state,
-            "temperature_c": decision.temperature_c,
-            "reason": decision.reason,
-            "should_warn": decision.should_warn,
-            "should_unload": decision.should_unload,
-        }
-
-        if decision.state != _last_thermal_state:
-            logger.info(
-                "Thermal state changed: %s -> %s",
-                _last_thermal_state,
-                decision.state,
-            )
-            _last_thermal_state = decision.state
-
-            if decision.reason:
-                alerts.append(f"🌡️ {decision.reason}")
-
-        # VRAM-Warnung bleibt zusätzlich sinnvoll
-        if gpu["vram_ratio"] is not None and gpu["vram_ratio"] > 0.95:
-            alerts.append(
-                f"🟡 Warnung: GPU VRAM-Verbrauch ist hoch: {gpu['vram_ratio']:.1%}"
-            )
-
-        # Nur bei anhaltend kritischer Temperatur eingreifen
-        if decision.should_unload:
-            ok, model = unload_current_ollama_model(ollama_url=OLLAMA_URL)
-            payload["actions"]["model_unloaded"] = ok
-            payload["actions"]["unloaded_model"] = model
-
-            if ok and model:
-                msg = f"🔴 Ollama-Modell wegen kritischer GPU-Temperatur entladen: {model}"
-                logger.error(msg)
-                alerts.append(msg)
-            else:
-                msg = "🔴 Kritische GPU-Temperatur erkannt, Modell konnte aber nicht entladen werden"
-                logger.error(msg)
-                alerts.append(msg)
-
-    except Exception as exc:
-        alerts.append(f"⚠️ GPU/Thermal Check fehlgeschlagen: {exc}")
-
-    # 4. Alerts senden
-    if alerts:
-        logger.warning("Alerts gefunden, sende Benachrichtigungen")
-        success = send_ntfy_alerts(alerts)
-        if not success:
-            logger.error("❌ Fehler beim Senden der Alerts an ntfy")
-    else:
-        logger.info("✅ Alles im grünen Bereich")
-
-    return payload
+    with HISTORY_FILE.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(snapshot, ensure_ascii=False) + "\n")
 
 
-def run_monitor_loop() -> None:
-    logger.info("ai-monitor gestartet, Intervall=%ss", POLL_INTERVAL_SECONDS)
+def print_snapshot(snapshot: dict[str, Any]) -> None:
+    models = snapshot.get("ollama_models") or []
+    model_names = [
+        model.get("name") or model.get("model") or "?"
+        for model in models
+        if isinstance(model, dict)
+    ]
 
-    while True:
-        try:
-            payload = monitor_system()
-            logger.info("Monitor payload: %s", payload)
-        except Exception:
-            logger.exception("Fehler im Monitor-Loop")
+    print(
+        " | ".join(
+            [
+                time.strftime("%Y-%m-%d %H:%M:%S"),
+                f"edge={snapshot.get('gpu_temp')}°C",
+                f"hotspot={snapshot.get('gpu_temp_junction')}°C",
+                f"mem={snapshot.get('gpu_temp_memory')}°C",
+                f"gpu={snapshot.get('gpu_use')}%",
+                f"vram={snapshot.get('vram_percent')}%",
+                f"power={snapshot.get('power_w')}W",
+                f"models={','.join(model_names) if model_names else '-'}",
+                f"error={snapshot.get('gpu_error')}",
+                f"docker_error={snapshot.get('docker_error')}",
+            ]
+        ),
+        flush=True,
+    )
 
-        time.sleep(POLL_INTERVAL_SECONDS)
+
+def run_monitor(interval: float, once: bool, quiet: bool = False) -> None:
+    while RUNNING:
+        snapshot = build_snapshot()
+        append_snapshot(snapshot)
+
+        if not quiet:
+            print_snapshot(snapshot)
+
+        if once:
+            break
+
+        time.sleep(interval)
+
+        
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="AI Monitor JSONL writer")
+    parser.add_argument(
+    "--quiet",
+    action="store_true",
+    help="Snapshots schreiben, aber keine Live-Ausgabe im Terminal anzeigen",
+)
+    parser.add_argument(
+        "--interval",
+        type=float,
+        default=5.0,
+        help="Messintervall in Sekunden",
+    )
+    parser.add_argument(
+        "--once",
+        action="store_true",
+        help="Nur einen Snapshot schreiben und beenden",
+    )
+    return parser.parse_args()
+
+
+def main() -> int:
+    signal.signal(signal.SIGINT, handle_stop_signal)
+    signal.signal(signal.SIGTERM, handle_stop_signal)
+
+    args = parse_args()
+    run_monitor(interval=args.interval, once=args.once, quiet=args.quiet)
+    return 0
 
 
 if __name__ == "__main__":
-    run_monitor_loop()
+    raise SystemExit(main())

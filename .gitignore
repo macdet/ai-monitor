@@ -1,5 +1,30 @@
-.opencode/
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Runtime state
+state/
 history/*.jsonl
+history/snapshots/*.tar.gz
+history/snapshots/*.patch
+history/snapshots/*.txt
+
+# Backups
+*.bak
+*.bak.*
+
+# Editor
+.cursor/
+.opencode/
+*history/*.jsonl
 *.bak.*
 __pycache__/
 .venv/

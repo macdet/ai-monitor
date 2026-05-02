@@ -1,0 +1,1187 @@
+AI Monitor Lastphasen Analyse
+=============================
+
+ID | Start               | Dauer   | Samples | Power avg/p75/p95/max | Hotspot avg/max | >=88C | >=95C | Spikes | Profil
+---|---------------------|---------|---------|------------------------|-----------------|-------|-------|--------|--------------------------
+ 1 | 2026-04-27 21:57:49 | 53s     |       8 | 125.0/304.0/306.0/319.0 W | 47.8/72.0 C |    0s |    0s |      0 | 300W-Kandidat
+ 2 | 2026-04-27 22:08:32 | 1m 8s   |      28 | 299.2/307.0/310.0/313.0 W | 77.9/87.0 C |    0s |    0s |      0 | 300W-Kandidat
+ 3 | 2026-04-27 22:17:02 | 1m 21s  |      31 | 192.5/307.0/321.0/337.0 W | 64.8/83.0 C |    0s |    0s |      2 | 300W-Kandidat mit Spikes
+ 4 | 2026-04-27 22:36:45 | 54s     |      15 | 72.7/15.0/306.0/307.0 W | 44.4/73.0 C |    0s |    0s |      0 | kurze/unklare Teillast
+ 5 | 2026-04-27 22:38:59 | 0s      |       1 | 300.0/300.0/300.0/300.0 W | 63.0/63.0 C |    0s |    0s |      0 | 300W-Kandidat
+ 6 | 2026-04-27 22:39:52 | 6s      |       2 | 301.5/298.0/298.0/305.0 W | 73.5/79.0 C |    0s |    0s |      0 | 300W-Kandidat
+ 7 | 2026-04-27 22:41:05 | 6s      |       2 | 210.0/74.0/74.0/346.0 W | 69.5/82.0 C |    0s |    0s |      1 | kurze/unklare Teillast
+ 8 | 2026-04-28 08:24:42 | 1m 0s   |      10 | 136.7/304.0/323.0/325.0 W | 49.5/74.0 C |    0s |    0s |      0 | 300W-Kandidat
+ 9 | 2026-04-28 08:41:02 | 1m 7s   |       9 | 111.4/217.0/311.0/343.0 W | 46.1/69.0 C |    0s |    0s |      1 | kurze/unklare Teillast
+10 | 2026-04-28 08:44:08 | 10m 2s  |      92 | 271.4/309.0/319.0/336.0 W | 84.9/95.0 C | 6m 31s |    7s |      1 | thermisch kritisch
+11 | 2026-04-28 09:04:46 | 8m 3s   |      72 | 298.1/309.0/334.0/415.0 W | 87.7/98.0 C | 4m 51s |    7s |      5 | thermisch kritisch
+12 | 2026-04-28 09:21:33 | 7m 10s  |      66 | 267.7/309.0/337.0/407.0 W | 83.1/97.0 C | 3m 51s |   12s |      6 | thermisch kritisch
+13 | 2026-04-28 09:30:56 | 2m 39s  |      25 | 278.9/314.0/324.0/340.0 W | 85.3/90.0 C | 1m 27s |    0s |      1 | thermisch warnend
+14 | 2026-04-28 09:47:16 | 3m 15s  |      59 | 285.9/310.0/335.0/389.0 W | 83.7/96.0 C |   34s |    6s |      4 | thermisch kritisch
+15 | 2026-04-28 10:03:06 | 4m 18s  |      40 | 299.1/310.0/327.0/387.0 W | 84.4/98.0 C | 1m 39s |    7s |      2 | thermisch kritisch
+16 | 2026-04-28 10:08:17 | 46s     |       8 | 261.0/318.0/330.0/343.0 W | 80.2/88.0 C |    7s |    0s |      2 | 300W-Kandidat mit Spikes
+17 | 2026-04-28 10:29:15 | 1m 20s  |      13 | 171.4/300.0/302.0/309.0 W | 58.9/81.0 C |    0s |    0s |      0 | 300W-Kandidat
+18 | 2026-04-28 10:35:39 | 1m 53s  |      18 | 308.0/313.0/435.0/439.0 W | 81.5/86.0 C |    0s |    0s |      3 | 300W-Kandidat mit Spikes
+19 | 2026-04-28 10:41:04 | 1m 52s  |      18 | 289.1/298.0/368.0/402.0 W | 81.6/84.0 C |    0s |    0s |      2 | 300W-Kandidat mit Spikes
+20 | 2026-04-28 10:46:28 | 1m 53s  |      18 | 280.3/292.0/377.0/392.0 W | 80.7/85.0 C |    0s |    0s |      2 | 300W-Kandidat mit Spikes
+21 | 2026-04-28 10:51:33 | 40s     |       7 | 57.4/17.0/38.0/284.0 W | 55.0/78.0 C |    0s |    0s |      0 | kurze/unklare Teillast
+22 | 2026-04-28 13:46:07 | 2m 53s  |      27 | 229.9/285.0/302.0/346.0 W | 68.8/82.0 C |    0s |    0s |      2 | 285W-Kandidat mit Spikes
+23 | 2026-04-28 13:58:09 | 1m 33s  |      15 | 255.1/288.0/298.0/342.0 W | 74.6/81.0 C |    0s |    0s |      1 | 285W-Kandidat mit Spikes
+24 | 2026-04-28 14:05:59 | 7m 4s   |      63 | 260.7/290.0/303.0/329.0 W | 82.0/91.0 C |   19s |    0s |      0 | 285W-Kandidat
+25 | 2026-04-28 14:15:09 | 46s     |       8 | 269.5/294.0/298.0/379.0 W | 80.9/86.0 C |    0s |    0s |      1 | 300W-Kandidat mit Spikes
+26 | 2026-04-28 14:29:56 | 53s     |       9 | 13.1/13.0/14.0/14.0 W | 40.2/41.0 C |    0s |    0s |      0 | kurze/unklare Teillast
+27 | 2026-04-28 14:37:34 | 13m 23s |     120 | 111.4/282.0/303.0/383.0 W | 60.7/90.0 C |   27s |    0s |      2 | 285W-Kandidat mit Spikes
+28 | 2026-04-28 14:56:15 | 20s     |       4 | 56.8/58.0/58.0/59.0 W | 49.0/51.0 C |    0s |    0s |      0 | kurze/unklare Teillast
+29 | 2026-04-28 15:09:36 | 0s      |       1 | 5.0/5.0/5.0/5.0 W | 37.0/37.0 C |    0s |    0s |      0 | kurze/unklare Teillast
+30 | 2026-04-28 15:26:03 | 1m 0s   |       3 | 12.0/13.0/13.0/13.0 W | 36.0/36.0 C |    0s |    0s |      0 | kurze/unklare Teillast
+31 | 2026-04-28 15:28:42 | 2m 40s  |      25 | 28.8/55.0/57.0/72.0 W | 44.8/50.0 C |    0s |    0s |      0 | kurze/unklare Teillast
+32 | 2026-04-28 15:32:08 | 7s      |       2 | 11.0/11.0/11.0/11.0 W | 43.0/43.0 C |    0s |    0s |      0 | kurze/unklare Teillast
+33 | 2026-04-28 15:33:15 | 1m 12s  |       5 | 72.6/44.0/44.0/282.0 W | 51.8/68.0 C |    0s |    0s |      0 | kurze/unklare Teillast
+34 | 2026-04-28 15:41:58 | 1m 19s  |       4 | 12.0/13.0/13.0/13.0 W | 39.8/40.0 C |    0s |    0s |      0 | kurze/unklare Teillast
+35 | 2026-04-28 15:44:30 | 2m 20s  |      22 | 68.6/61.0/65.0/257.0 W | 53.3/61.0 C |    0s |    0s |      0 | kurze/unklare Teillast
+36 | 2026-04-28 15:48:23 | 0s      |       1 | 15.0/15.0/15.0/15.0 W | 53.0/53.0 C |    0s |    0s |      0 | kurze/unklare Teillast
+37 | 2026-04-28 15:49:36 | 13s     |       3 | 212.3/287.0/287.0/289.0 W | 74.0/79.0 C |    0s |    0s |      0 | 285W-Kandidat
+38 | 2026-04-28 16:07:42 | 0s      |       1 | 121.0/121.0/121.0/121.0 W | 37.0/37.0 C |    0s |    0s |      0 | kurze/unklare Teillast
+39 | 2026-04-28 16:09:08 | 13s     |       3 | 209.7/285.0/285.0/303.0 W | 50.7/64.0 C |    0s |    0s |      0 | 285W-Kandidat
+
+Kurzfazit
+=========
+Lastphasen gesamt:       39
+Thermisch kritisch:      5
+Thermisch warnend:       1
+Ohne Hotspot >=88°C:     30
+Kritische IDs:           10, 11, 12, 14, 15
+Warnende IDs:            13
+
+Details
+=======
+
+== Lastphase 1 ==
+Start:           2026-04-27 21:57:49
+Ende:            2026-04-27 21:58:42
+Dauer:           53s
+Samples:         8
+Modell:          qwen3.6:27b
+Profil:          300W-Kandidat
+
+Power avg:       125.0W
+Power p50:       14.0W
+Power p75:       304.0W
+Power p95:       306.0W
+Power max:       319.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        49.0°C
+Hotspot avg:     47.8°C
+Hotspot max:     72.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      60.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        90.0%
+
+== Lastphase 2 ==
+Start:           2026-04-27 22:08:32
+Ende:            2026-04-27 22:09:40
+Dauer:           1m 8s
+Samples:         28
+Modell:          qwen3.6:27b
+Profil:          300W-Kandidat
+
+Power avg:       299.2W
+Power p50:       303.0W
+Power p75:       307.0W
+Power p95:       310.0W
+Power max:       313.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        61.0°C
+Hotspot avg:     77.9°C
+Hotspot max:     87.0°C
+Hotspot >=80°C:  36s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      75.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        90.0%
+
+== Lastphase 3 ==
+Start:           2026-04-27 22:17:02
+Ende:            2026-04-27 22:18:23
+Dauer:           1m 21s
+Samples:         31
+Modell:          qwen3.6:27b
+Profil:          300W-Kandidat mit Spikes
+
+Power avg:       192.5W
+Power p50:       301.0W
+Power p75:       307.0W
+Power p95:       321.0W
+Power max:       337.0W
+Power >=330W:   2 Messpunkte
+
+Edge max:        61.0°C
+Hotspot avg:     64.8°C
+Hotspot max:     83.0°C
+Hotspot >=80°C:  19s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      75.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        95.0%
+
+== Lastphase 4 ==
+Start:           2026-04-27 22:36:45
+Ende:            2026-04-27 22:37:39
+Dauer:           54s
+Samples:         15
+Modell:          qwen3.6:27b
+Profil:          kurze/unklare Teillast
+
+Power avg:       72.7W
+Power p50:       14.0W
+Power p75:       15.0W
+Power p95:       306.0W
+Power max:       307.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        50.0°C
+Hotspot avg:     44.4°C
+Hotspot max:     73.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      62.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        90.0%
+
+== Lastphase 5 ==
+Start:           2026-04-27 22:38:59
+Ende:            2026-04-27 22:38:59
+Dauer:           0s
+Samples:         1
+Modell:          qwen3.6:27b
+Profil:          300W-Kandidat
+
+Power avg:       300.0W
+Power p50:       300.0W
+Power p75:       300.0W
+Power p95:       300.0W
+Power max:       300.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        46.0°C
+Hotspot avg:     63.0°C
+Hotspot max:     63.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      54.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        90.0%
+
+== Lastphase 6 ==
+Start:           2026-04-27 22:39:52
+Ende:            2026-04-27 22:39:58
+Dauer:           6s
+Samples:         2
+Modell:          qwen3.6:27b
+Profil:          300W-Kandidat
+
+Power avg:       301.5W
+Power p50:       298.0W
+Power p75:       298.0W
+Power p95:       298.0W
+Power max:       305.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        54.0°C
+Hotspot avg:     73.5°C
+Hotspot max:     79.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      64.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        90.0%
+
+== Lastphase 7 ==
+Start:           2026-04-27 22:41:05
+Ende:            2026-04-27 22:41:11
+Dauer:           6s
+Samples:         2
+Modell:          qwen3.6:27b
+Profil:          kurze/unklare Teillast
+
+Power avg:       210.0W
+Power p50:       74.0W
+Power p75:       74.0W
+Power p95:       74.0W
+Power max:       346.0W
+Power >=330W:   1 Messpunkte
+
+Edge max:        57.0°C
+Hotspot avg:     69.5°C
+Hotspot max:     82.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      67.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        90.0%
+
+== Lastphase 8 ==
+Start:           2026-04-28 08:24:42
+Ende:            2026-04-28 08:25:42
+Dauer:           1m 0s
+Samples:         10
+Modell:          qwen3.6:27b
+Profil:          300W-Kandidat
+
+Power avg:       136.7W
+Power p50:       14.0W
+Power p75:       304.0W
+Power p95:       323.0W
+Power max:       325.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        51.0°C
+Hotspot avg:     49.5°C
+Hotspot max:     74.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      62.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        90.0%
+
+== Lastphase 9 ==
+Start:           2026-04-28 08:41:02
+Ende:            2026-04-28 08:42:09
+Dauer:           1m 7s
+Samples:         9
+Modell:          gemma3:27b
+Profil:          kurze/unklare Teillast
+
+Power avg:       111.4W
+Power p50:       27.0W
+Power p75:       217.0W
+Power p95:       311.0W
+Power max:       343.0W
+Power >=330W:   1 Messpunkte
+
+Edge max:        47.0°C
+Hotspot avg:     46.1°C
+Hotspot max:     69.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      60.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        86.0%
+
+== Lastphase 10 ==
+Start:           2026-04-28 08:44:08
+Ende:            2026-04-28 08:54:10
+Dauer:           10m 2s
+Samples:         92
+Modell:          qwen3.5:27b
+Profil:          thermisch kritisch
+
+Power avg:       271.4W
+Power p50:       303.0W
+Power p75:       309.0W
+Power p95:       319.0W
+Power max:       336.0W
+Power >=330W:   1 Messpunkte
+
+Edge max:        69.0°C
+Hotspot avg:     84.9°C
+Hotspot max:     95.0°C
+Hotspot >=80°C:  8m 56s
+Hotspot >=88°C:  6m 31s
+Hotspot >=95°C:  7s
+
+Memory max:      86.0°C
+Memory >=80°C:   7m 50s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        95.0%
+
+== Lastphase 11 ==
+Start:           2026-04-28 09:04:46
+Ende:            2026-04-28 09:12:49
+Dauer:           8m 3s
+Samples:         72
+Modell:          qwen3.5:27b
+Profil:          thermisch kritisch
+
+Power avg:       298.1W
+Power p50:       303.0W
+Power p75:       309.0W
+Power p95:       334.0W
+Power max:       415.0W
+Power >=330W:   5 Messpunkte
+
+Edge max:        69.0°C
+Hotspot avg:     87.7°C
+Hotspot max:     98.0°C
+Hotspot >=80°C:  7m 56s
+Hotspot >=88°C:  4m 51s
+Hotspot >=95°C:  7s
+
+Memory max:      86.0°C
+Memory >=80°C:   6m 10s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        95.0%
+
+== Lastphase 12 ==
+Start:           2026-04-28 09:21:33
+Ende:            2026-04-28 09:28:43
+Dauer:           7m 10s
+Samples:         66
+Modell:          qwen3.6:27b
+Profil:          thermisch kritisch
+
+Power avg:       267.7W
+Power p50:       302.0W
+Power p75:       309.0W
+Power p95:       337.0W
+Power max:       407.0W
+Power >=330W:   6 Messpunkte
+
+Edge max:        69.0°C
+Hotspot avg:     83.1°C
+Hotspot max:     97.0°C
+Hotspot >=80°C:  6m 3s
+Hotspot >=88°C:  3m 51s
+Hotspot >=95°C:  12s
+
+Memory max:      86.0°C
+Memory >=80°C:   4m 45s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        95.0%
+
+== Lastphase 13 ==
+Start:           2026-04-28 09:30:56
+Ende:            2026-04-28 09:33:35
+Dauer:           2m 39s
+Samples:         25
+Modell:          qwen3.6:27b
+Profil:          thermisch warnend
+
+Power avg:       278.9W
+Power p50:       302.0W
+Power p75:       314.0W
+Power p95:       324.0W
+Power max:       340.0W
+Power >=330W:   1 Messpunkte
+
+Edge max:        68.0°C
+Hotspot avg:     85.3°C
+Hotspot max:     90.0°C
+Hotspot >=80°C:  2m 13s
+Hotspot >=88°C:  1m 27s
+Hotspot >=95°C:  0s
+
+Memory max:      84.0°C
+Memory >=80°C:   1m 53s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        95.0%
+
+== Lastphase 14 ==
+Start:           2026-04-28 09:47:16
+Ende:            2026-04-28 09:50:31
+Dauer:           3m 15s
+Samples:         59
+Modell:          qwen3.6:27b
+Profil:          thermisch kritisch
+
+Power avg:       285.9W
+Power p50:       305.0W
+Power p75:       310.0W
+Power p95:       335.0W
+Power max:       389.0W
+Power >=330W:   4 Messpunkte
+
+Edge max:        67.0°C
+Hotspot avg:     83.7°C
+Hotspot max:     96.0°C
+Hotspot >=80°C:  2m 42s
+Hotspot >=88°C:  34s
+Hotspot >=95°C:  6s
+
+Memory max:      84.0°C
+Memory >=80°C:   1m 35s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        95.0%
+
+== Lastphase 15 ==
+Start:           2026-04-28 10:03:06
+Ende:            2026-04-28 10:07:24
+Dauer:           4m 18s
+Samples:         40
+Modell:          qwen3.6:27b
+Profil:          thermisch kritisch
+
+Power avg:       299.1W
+Power p50:       305.0W
+Power p75:       310.0W
+Power p95:       327.0W
+Power max:       387.0W
+Power >=330W:   2 Messpunkte
+
+Edge max:        68.0°C
+Hotspot avg:     84.4°C
+Hotspot max:     98.0°C
+Hotspot >=80°C:  3m 45s
+Hotspot >=88°C:  1m 39s
+Hotspot >=95°C:  7s
+
+Memory max:      84.0°C
+Memory >=80°C:   2m 32s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        95.0%
+
+== Lastphase 16 ==
+Start:           2026-04-28 10:08:17
+Ende:            2026-04-28 10:09:03
+Dauer:           46s
+Samples:         8
+Modell:          qwen3.6:27b
+Profil:          300W-Kandidat mit Spikes
+
+Power avg:       261.0W
+Power p50:       308.0W
+Power p75:       318.0W
+Power p95:       330.0W
+Power max:       343.0W
+Power >=330W:   2 Messpunkte
+
+Edge max:        65.0°C
+Hotspot avg:     80.2°C
+Hotspot max:     88.0°C
+Hotspot >=80°C:  39s
+Hotspot >=88°C:  7s
+Hotspot >=95°C:  0s
+
+Memory max:      80.0°C
+Memory >=80°C:   13s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        95.0%
+
+== Lastphase 17 ==
+Start:           2026-04-28 10:29:15
+Ende:            2026-04-28 10:30:35
+Dauer:           1m 20s
+Samples:         13
+Modell:          qwen3.6:27b
+Profil:          300W-Kandidat
+
+Power avg:       171.4W
+Power p50:       296.0W
+Power p75:       300.0W
+Power p95:       302.0W
+Power max:       309.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        59.0°C
+Hotspot avg:     58.9°C
+Hotspot max:     81.0°C
+Hotspot >=80°C:  13s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      72.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        95.0%
+
+== Lastphase 18 ==
+Start:           2026-04-28 10:35:39
+Ende:            2026-04-28 10:37:32
+Dauer:           1m 53s
+Samples:         18
+Modell:          qwen3.6:27b
+Profil:          300W-Kandidat mit Spikes
+
+Power avg:       308.0W
+Power p50:       304.0W
+Power p75:       313.0W
+Power p95:       435.0W
+Power max:       439.0W
+Power >=330W:   3 Messpunkte
+
+Edge max:        65.0°C
+Hotspot avg:     81.5°C
+Hotspot max:     86.0°C
+Hotspot >=80°C:  1m 33s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      82.0°C
+Memory >=80°C:   26s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        95.0%
+
+== Lastphase 19 ==
+Start:           2026-04-28 10:41:04
+Ende:            2026-04-28 10:42:56
+Dauer:           1m 52s
+Samples:         18
+Modell:          qwen3.6:27b
+Profil:          300W-Kandidat mit Spikes
+
+Power avg:       289.1W
+Power p50:       293.0W
+Power p75:       298.0W
+Power p95:       368.0W
+Power max:       402.0W
+Power >=330W:   2 Messpunkte
+
+Edge max:        65.0°C
+Hotspot avg:     81.6°C
+Hotspot max:     84.0°C
+Hotspot >=80°C:  1m 39s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      82.0°C
+Memory >=80°C:   46s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        95.0%
+
+== Lastphase 20 ==
+Start:           2026-04-28 10:46:28
+Ende:            2026-04-28 10:48:21
+Dauer:           1m 53s
+Samples:         18
+Modell:          qwen3.6:27b
+Profil:          300W-Kandidat mit Spikes
+
+Power avg:       280.3W
+Power p50:       289.0W
+Power p75:       292.0W
+Power p95:       377.0W
+Power max:       392.0W
+Power >=330W:   2 Messpunkte
+
+Edge max:        65.0°C
+Hotspot avg:     80.7°C
+Hotspot max:     85.0°C
+Hotspot >=80°C:  1m 39s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      82.0°C
+Memory >=80°C:   46s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        95.0%
+
+== Lastphase 21 ==
+Start:           2026-04-28 10:51:33
+Ende:            2026-04-28 10:52:13
+Dauer:           40s
+Samples:         7
+Modell:          qwen3.6:27b
+Profil:          kurze/unklare Teillast
+
+Power avg:       57.4W
+Power p50:       17.0W
+Power p75:       17.0W
+Power p95:       38.0W
+Power max:       284.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        55.0°C
+Hotspot avg:     55.0°C
+Hotspot max:     78.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      66.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        90.0%
+
+== Lastphase 22 ==
+Start:           2026-04-28 13:46:07
+Ende:            2026-04-28 13:49:00
+Dauer:           2m 53s
+Samples:         27
+Modell:          qwen3.6:27b
+Profil:          285W-Kandidat mit Spikes
+
+Power avg:       229.9W
+Power p50:       283.0W
+Power p75:       285.0W
+Power p95:       302.0W
+Power max:       346.0W
+Power >=330W:   2 Messpunkte
+
+Edge max:        63.0°C
+Hotspot avg:     68.8°C
+Hotspot max:     82.0°C
+Hotspot >=80°C:  1m 26s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      79.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        95.0%
+
+== Lastphase 23 ==
+Start:           2026-04-28 13:58:09
+Ende:            2026-04-28 13:59:42
+Dauer:           1m 33s
+Samples:         15
+Modell:          qwen3.6:27b
+Profil:          285W-Kandidat mit Spikes
+
+Power avg:       255.1W
+Power p50:       285.0W
+Power p75:       288.0W
+Power p95:       298.0W
+Power max:       342.0W
+Power >=330W:   1 Messpunkte
+
+Edge max:        62.0°C
+Hotspot avg:     74.6°C
+Hotspot max:     81.0°C
+Hotspot >=80°C:  46s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      78.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        95.0%
+
+== Lastphase 24 ==
+Start:           2026-04-28 14:05:59
+Ende:            2026-04-28 14:13:03
+Dauer:           7m 4s
+Samples:         63
+Modell:          qwen3.6:27b
+Profil:          285W-Kandidat
+
+Power avg:       260.7W
+Power p50:       283.0W
+Power p75:       290.0W
+Power p95:       303.0W
+Power max:       329.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        68.0°C
+Hotspot avg:     82.0°C
+Hotspot max:     91.0°C
+Hotspot >=80°C:  5m 57s
+Hotspot >=88°C:  19s
+Hotspot >=95°C:  0s
+
+Memory max:      86.0°C
+Memory >=80°C:   3m 31s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        95.0%
+
+== Lastphase 25 ==
+Start:           2026-04-28 14:15:09
+Ende:            2026-04-28 14:15:55
+Dauer:           46s
+Samples:         8
+Modell:          qwen3.6:27b
+Profil:          300W-Kandidat mit Spikes
+
+Power avg:       269.5W
+Power p50:       288.0W
+Power p75:       294.0W
+Power p95:       298.0W
+Power max:       379.0W
+Power >=330W:   1 Messpunkte
+
+Edge max:        64.0°C
+Hotspot avg:     80.9°C
+Hotspot max:     86.0°C
+Hotspot >=80°C:  39s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      80.0°C
+Memory >=80°C:   13s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        95.0%
+
+== Lastphase 26 ==
+Start:           2026-04-28 14:29:56
+Ende:            2026-04-28 14:30:49
+Dauer:           53s
+Samples:         9
+Modell:          qwen3.6:27b
+Profil:          kurze/unklare Teillast
+
+Power avg:       13.1W
+Power p50:       13.0W
+Power p75:       13.0W
+Power p95:       14.0W
+Power max:       14.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        35.0°C
+Hotspot avg:     40.2°C
+Hotspot max:     41.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      44.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     0.0%
+VRAM max:        95.0%
+
+== Lastphase 27 ==
+Start:           2026-04-28 14:37:34
+Ende:            2026-04-28 14:50:57
+Dauer:           13m 23s
+Samples:         120
+Modell:          qwen3.6:27b
+Profil:          285W-Kandidat mit Spikes
+
+Power avg:       111.4W
+Power p50:       15.0W
+Power p75:       282.0W
+Power p95:       303.0W
+Power max:       383.0W
+Power >=330W:   2 Messpunkte
+
+Edge max:        67.0°C
+Hotspot avg:     60.7°C
+Hotspot max:     90.0°C
+Hotspot >=80°C:  3m 39s
+Hotspot >=88°C:  27s
+Hotspot >=95°C:  0s
+
+Memory max:      84.0°C
+Memory >=80°C:   2m 26s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        95.0%
+
+== Lastphase 28 ==
+Start:           2026-04-28 14:56:15
+Ende:            2026-04-28 14:56:35
+Dauer:           20s
+Samples:         4
+Modell:          qwen2.5:32b-instruct-q4_K_M
+Profil:          kurze/unklare Teillast
+
+Power avg:       56.8W
+Power p50:       58.0W
+Power p75:       58.0W
+Power p95:       58.0W
+Power max:       59.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        41.0°C
+Hotspot avg:     49.0°C
+Hotspot max:     51.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      59.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     0.0%
+VRAM max:        76.0%
+
+== Lastphase 29 ==
+Start:           2026-04-28 15:09:36
+Ende:            2026-04-28 15:09:36
+Dauer:           0s
+Samples:         1
+Modell:          qwen2.5:32b-instruct-q4_K_M
+Profil:          kurze/unklare Teillast
+
+Power avg:       5.0W
+Power p50:       5.0W
+Power p75:       5.0W
+Power p95:       5.0W
+Power max:       5.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        31.0°C
+Hotspot avg:     37.0°C
+Hotspot max:     37.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      42.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     0.0%
+VRAM max:        76.0%
+
+== Lastphase 30 ==
+Start:           2026-04-28 15:26:03
+Ende:            2026-04-28 15:27:03
+Dauer:           1m 0s
+Samples:         3
+Modell:          -
+Profil:          kurze/unklare Teillast
+
+Power avg:       12.0W
+Power p50:       13.0W
+Power p75:       13.0W
+Power p95:       13.0W
+Power max:       13.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        30.0°C
+Hotspot avg:     36.0°C
+Hotspot max:     36.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      40.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     30.0%
+VRAM max:        48.0%
+
+== Lastphase 31 ==
+Start:           2026-04-28 15:28:42
+Ende:            2026-04-28 15:31:22
+Dauer:           2m 40s
+Samples:         25
+Modell:          qwen2.5:32b-instruct-q4_K_M
+Profil:          kurze/unklare Teillast
+
+Power avg:       28.8W
+Power p50:       8.0W
+Power p75:       55.0W
+Power p95:       57.0W
+Power max:       72.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        40.0°C
+Hotspot avg:     44.8°C
+Hotspot max:     50.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      58.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        76.0%
+
+== Lastphase 32 ==
+Start:           2026-04-28 15:32:08
+Ende:            2026-04-28 15:32:15
+Dauer:           7s
+Samples:         2
+Modell:          -
+Profil:          kurze/unklare Teillast
+
+Power avg:       11.0W
+Power p50:       11.0W
+Power p75:       11.0W
+Power p95:       11.0W
+Power max:       11.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        37.0°C
+Hotspot avg:     43.0°C
+Hotspot max:     43.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      46.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     24.0%
+VRAM max:        76.0%
+
+== Lastphase 33 ==
+Start:           2026-04-28 15:33:15
+Ende:            2026-04-28 15:34:27
+Dauer:           1m 12s
+Samples:         5
+Modell:          qwen2.5:32b-instruct-q4_K_M
+Profil:          kurze/unklare Teillast
+
+Power avg:       72.6W
+Power p50:       13.0W
+Power p75:       44.0W
+Power p95:       44.0W
+Power max:       282.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        46.0°C
+Hotspot avg:     51.8°C
+Hotspot max:     68.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      61.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        86.0%
+
+== Lastphase 34 ==
+Start:           2026-04-28 15:41:58
+Ende:            2026-04-28 15:43:17
+Dauer:           1m 19s
+Samples:         4
+Modell:          -
+Profil:          kurze/unklare Teillast
+
+Power avg:       12.0W
+Power p50:       13.0W
+Power p75:       13.0W
+Power p95:       13.0W
+Power max:       13.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        34.0°C
+Hotspot avg:     39.8°C
+Hotspot max:     40.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      44.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     44.0%
+VRAM max:        48.0%
+
+== Lastphase 35 ==
+Start:           2026-04-28 15:44:30
+Ende:            2026-04-28 15:46:50
+Dauer:           2m 20s
+Samples:         22
+Modell:          qwen2.5:32b-instruct-q4_K_M
+Profil:          kurze/unklare Teillast
+
+Power avg:       68.6W
+Power p50:       59.0W
+Power p75:       61.0W
+Power p95:       65.0W
+Power max:       257.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        51.0°C
+Hotspot avg:     53.3°C
+Hotspot max:     61.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      69.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        76.0%
+
+== Lastphase 36 ==
+Start:           2026-04-28 15:48:23
+Ende:            2026-04-28 15:48:23
+Dauer:           0s
+Samples:         1
+Modell:          -
+Profil:          kurze/unklare Teillast
+
+Power avg:       15.0W
+Power p50:       15.0W
+Power p75:       15.0W
+Power p95:       15.0W
+Power max:       15.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        47.0°C
+Hotspot avg:     53.0°C
+Hotspot max:     53.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      56.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     25.0%
+VRAM max:        76.0%
+
+== Lastphase 37 ==
+Start:           2026-04-28 15:49:36
+Ende:            2026-04-28 15:49:49
+Dauer:           13s
+Samples:         3
+Modell:          qwen2.5:32b-instruct-q4_K_M
+Profil:          285W-Kandidat
+
+Power avg:       212.3W
+Power p50:       287.0W
+Power p75:       287.0W
+Power p95:       287.0W
+Power max:       289.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        60.0°C
+Hotspot avg:     74.0°C
+Hotspot max:     79.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      74.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        86.0%
+
+== Lastphase 38 ==
+Start:           2026-04-28 16:07:42
+Ende:            2026-04-28 16:07:42
+Dauer:           0s
+Samples:         1
+Modell:          -
+Profil:          kurze/unklare Teillast
+
+Power avg:       121.0W
+Power p50:       121.0W
+Power p75:       121.0W
+Power p95:       121.0W
+Power max:       121.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        31.0°C
+Hotspot avg:     37.0°C
+Hotspot max:     37.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      42.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        86.0%
+
+== Lastphase 39 ==
+Start:           2026-04-28 16:09:08
+Ende:            2026-04-28 16:09:21
+Dauer:           13s
+Samples:         3
+Modell:          qwen2.5-coder:14b-8k
+Profil:          285W-Kandidat
+
+Power avg:       209.7W
+Power p50:       285.0W
+Power p75:       285.0W
+Power p95:       285.0W
+Power max:       303.0W
+Power >=330W:   0 Messpunkte
+
+Edge max:        44.0°C
+Hotspot avg:     50.7°C
+Hotspot max:     64.0°C
+Hotspot >=80°C:  0s
+Hotspot >=88°C:  0s
+Hotspot >=95°C:  0s
+
+Memory max:      58.0°C
+Memory >=80°C:   0s
+Memory >=88°C:   0s
+
+GPU Use max:     100.0%
+VRAM max:        42.0%

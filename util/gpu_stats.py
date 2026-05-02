@@ -1,208 +1,156 @@
+#!/usr/bin/env python3
 from __future__ import annotations
 
 import json
-import logging
-import os
 import subprocess
-from typing import Any
+from typing import Any, Optional
 
-logger = logging.getLogger(__name__)
+ROCM_SMI = "/opt/rocm/bin/rocm-smi"
 
 
-def get_gpu_stats() -> dict[str, float | None]:
-    """
-    Liest GPU-Daten über rocm-smi aus.
+def _to_float(value: Any) -> Optional[float]:
+    if value is None:
+        return None
+    text = str(value).strip()
+    if text in {"", "N/A", "None", "null"}:
+        return None
+    try:
+        return float(text)
+    except Exception:
+        return None
 
-    Rückgabe:
-      - vram_used: GiB
-      - vram_total: GiB
-      - vram_ratio: 0..1
-      - temperature_edge: °C
-      - temperature_hotspot: °C
-      - gpu_use: %
-      - power_w: W
 
-    Diese Funktion misst nur. Sie trifft keine Policy-Entscheidung.
-    """
-    rocm_smi_path = os.getenv("ROCM_SMI_PATH", "/opt/rocm/bin/rocm-smi")
-    command = [
-        rocm_smi_path,
-        "--showtemp",
-        "--showuse",
-        "--showmeminfo",
-        "vram",
-        "--showpower",
-        "--json",
-    ]
+def _to_int(value: Any) -> Optional[int]:
+    number = _to_float(value)
+    return None if number is None else int(number)
 
-    result: dict[str, float | None] = {
-        "vram_used": None,
-        "vram_total": None,
-        "vram_ratio": None,
-        "temperature_edge": None,
-        "temperature_hotspot": None,
+
+def _extract_json(raw: str) -> dict[str, Any]:
+    raw = raw.strip()
+    start = raw.find("{")
+    end = raw.rfind("}") + 1
+
+    if start < 0 or end <= start:
+        raise ValueError(f"No JSON found in rocm-smi output: {raw[:300]!r}")
+
+    parsed = json.loads(raw[start:end])
+    if not isinstance(parsed, dict):
+        raise ValueError(f"Unexpected JSON type: {type(parsed).__name__}")
+
+    return parsed
+
+
+def _run_rocm_smi(args: list[str]) -> dict[str, Any]:
+    proc = subprocess.run(
+        [ROCM_SMI, *args, "--json"],
+        text=True,
+        capture_output=True,
+        timeout=8,
+        check=False,
+    )
+
+    raw = proc.stdout.strip() or proc.stderr.strip()
+
+    if not raw:
+        raise RuntimeError(
+            f"rocm-smi returned no output; rc={proc.returncode}; stderr={proc.stderr!r}"
+        )
+
+    # Add debug output for empty JSON
+    if raw.strip() == "{}":
+        raise RuntimeError(
+            f"rocm-smi returned empty JSON; rc={proc.returncode}; stderr={proc.stderr!r}; stdout={proc.stdout!r}"
+        )
+
+    return _extract_json(raw)
+
+
+def _first_card(data: dict[str, Any]) -> dict[str, Any]:
+    if not data:
+        return {}
+
+    first = next(iter(data.values()))
+    return first if isinstance(first, dict) else {}
+
+
+def collect_gpu_stats() -> dict[str, Any]:
+    result: dict[str, Any] = {
+        "gpu_temp": None,
+        "gpu_temp_junction": None,
+        "gpu_temp_memory": None,
         "gpu_use": None,
         "power_w": None,
+        "vram_percent": None,
+        "vram_used": None,
+        "vram_total": None,
+        "gpu_error": None,
     }
 
-    def to_float(value: Any) -> float | None:
-        if value is None:
-            return None
+    try:
+        data = _run_rocm_smi([
+            "--showtemp",
+            "--showpower",
+            "--showuse",
+            "--showmemuse",
+        ])
+        card = _first_card(data)
 
-        text = str(value).strip().replace(",", ".")
-        number_chars = "".join(ch for ch in text if ch.isdigit() or ch in ".-")
+        result.update({
+            "gpu_temp": _to_float(card.get("Temperature (Sensor edge) (C)")),
+            "gpu_temp_junction": _to_float(card.get("Temperature (Sensor junction) (C)")),
+            "gpu_temp_memory": _to_float(card.get("Temperature (Sensor memory) (C)")),
+            "power_w": _to_float(card.get("Average Graphics Package Power (W)")),
+            "gpu_use": _to_float(card.get("GPU use (%)")),
+            "vram_percent": _to_float(card.get("GPU Memory Allocated (VRAM%)")),
+        })
 
-        if not number_chars:
-            return None
-
-        try:
-            return float(number_chars)
-        except ValueError:
-            return None
-
-    def first_value_by_terms(payload: dict[str, Any], terms: tuple[str, ...]) -> float | None:
-        for key, value in payload.items():
-            key_l = str(key).lower()
-            if all(term in key_l for term in terms):
-                return to_float(value)
-        return None
-
-    def first_value_by_alternatives(
-        payload: dict[str, Any],
-        alternatives: list[tuple[str, ...]],
-    ) -> float | None:
-        for terms in alternatives:
-            value = first_value_by_terms(payload, terms)
-            if value is not None:
-                return value
-        return None
-
-    def first_gpu_payload(data: dict[str, Any]) -> dict[str, Any] | None:
-        for value in data.values():
-            if isinstance(value, dict):
-                return value
-        return None
-
-    def convert_vram_to_gib(raw_value: float | None) -> float | None:
-        if raw_value is None:
-            return None
-
-        gib = raw_value / (1024**3)
-
-        # Fallback, falls die Quelle unerwartet nicht in Bytes liefert
-        if gib > 100:
-            gib = raw_value / 1024
-
-        return gib
+    except Exception as exc:
+        result["gpu_error"] = f"basic_metrics_failed: {exc!r}"
+        return result
 
     try:
-        env = os.environ.copy()
-        env["LC_ALL"] = "C"
-        env["LANG"] = "C"
+        mem_data = _run_rocm_smi(["--showmeminfo", "vram"])
+        mem_card = _first_card(mem_data)
 
-        proc = subprocess.run(
-            command,
-            check=True,
-            capture_output=True,
-            text=True,
-            timeout=10,
-            env=env,
-        )
+        used_keys = [
+            "VRAM Total Used Memory (B)",
+            "VRAM Used Memory (B)",
+            "GPU Memory Used (B)",
+        ]
+        total_keys = [
+            "VRAM Total Memory (B)",
+            "VRAM Total Available Memory (B)",
+            "GPU Memory Total (B)",
+        ]
 
-        data = json.loads(proc.stdout)
-        if not isinstance(data, dict) or not data:
-            raise ValueError("Leere/ungültige JSON-Antwort von rocm-smi")
+        for key in used_keys:
+            if key in mem_card:
+                result["vram_used"] = _to_int(mem_card.get(key))
+                break
 
-        first_gpu = first_gpu_payload(data)
-        if not isinstance(first_gpu, dict):
-            raise ValueError("Keine GPU-Daten in rocm-smi JSON gefunden")
+        for key in total_keys:
+            if key in mem_card:
+                result["vram_total"] = _to_int(mem_card.get(key))
+                break
 
-        # VRAM
-        vram_used_raw = first_value_by_alternatives(
-            first_gpu,
-            [
-                ("used", "vram"),
-                ("vram", "used"),
-            ],
-        )
-        vram_total_raw = first_value_by_alternatives(
-            first_gpu,
-            [
-                ("total", "vram"),
-                ("vram", "total"),
-            ],
-        )
-
-        vram_used_gib = convert_vram_to_gib(vram_used_raw)
-        vram_total_gib = convert_vram_to_gib(vram_total_raw)
-
-        vram_ratio = (
-            vram_used_gib / vram_total_gib
-            if vram_used_gib is not None and vram_total_gib not in (None, 0)
-            else None
-        )
-
-        # Temperatur
-        temperature_edge = first_value_by_alternatives(
-            first_gpu,
-            [
-                ("temperature", "edge"),
-                ("temp", "edge"),
-                ("temperature", "current"),
-                ("temp", "current"),
-            ],
-        )
-
-        temperature_hotspot = first_value_by_alternatives(
-            first_gpu,
-            [
-                ("temperature", "junction"),
-                ("temp", "junction"),
-                ("temperature", "hotspot"),
-                ("temp", "hotspot"),
-                ("temperature", "mem"),
-                ("temp", "mem"),
-            ],
-        )
-
-        # GPU-Auslastung
-        gpu_use = first_value_by_alternatives(
-            first_gpu,
-            [
-                ("gpu", "use"),
-                ("use", "gpu"),
-                ("utilization", "gpu"),
-            ],
-        )
-
-        # Leistung
-        power_w = first_value_by_alternatives(
-            first_gpu,
-            [
-                ("current", "power"),
-                ("power", "average"),
-                ("socket", "power"),
-                ("power",),
-            ],
-        )
-
-        result = {
-            "vram_used": vram_used_gib,
-            "vram_total": vram_total_gib,
-            "vram_ratio": vram_ratio,
-            "temperature_edge": temperature_edge,
-            "temperature_hotspot": temperature_hotspot,
-            "gpu_use": gpu_use,
-            "power_w": power_w,
-        }
-
-    except FileNotFoundError:
-        logger.exception("rocm-smi nicht gefunden")
-    except subprocess.CalledProcessError as exc:
-        logger.exception("rocm-smi fehlgeschlagen (exit=%s): %s", exc.returncode, exc)
-    except subprocess.TimeoutExpired:
-        logger.exception("Timeout bei rocm-smi")
-    except (json.JSONDecodeError, ValueError, TypeError) as exc:
-        logger.exception("Ungültige rocm-smi Antwort: %s", exc)
+    except Exception as exc:
+        result["vram_error"] = f"vram_bytes_failed: {exc!r}"
 
     return result
+
+
+def get_gpu_stats() -> dict[str, Any]:
+    return collect_gpu_stats()
+
+
+def read_gpu_stats() -> dict[str, Any]:
+    return collect_gpu_stats()
+
+
+def collect() -> dict[str, Any]:
+    return collect_gpu_stats()
+
+
+if __name__ == "__main__":
+    print(json.dumps(collect_gpu_stats(), indent=2, ensure_ascii=False))
+    
