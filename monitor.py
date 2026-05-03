@@ -49,60 +49,29 @@ def collect_ollama_models() -> list[dict[str, Any]]:
 
 
 def collect_system_stats() -> dict[str, Any]:
-    """Collect CPU load, RAM usage, and CPU temperature."""
-    system_stats: dict[str, Any] = {
-        "cpu_percent": None,
-        "ram_total": None,
-        "ram_available": None,
-        "ram_used": None,
-        "ram_percent": None,
-        "cpu_temp": None,
-        "error": None,
-    }
-
-    if not PSUTIL_AVAILABLE:
-        system_stats["error"] = "psutil_not_available"
-        return system_stats
-
+    """Collect CPU load, RAM usage, and CPU temperature via /proc."""
     try:
-        # CPU load percentage
-        system_stats["cpu_percent"] = psutil.cpu_percent(interval=1)
-        
-        # RAM usage
-        ram = psutil.virtual_memory()
-        system_stats["ram_total"] = ram.total
-        system_stats["ram_available"] = ram.available
-        system_stats["ram_used"] = ram.used
-        system_stats["ram_percent"] = ram.percent
-        
-        # CPU temperature (if available)
-        try:
-            temps = psutil.sensors_temperatures()
-            if temps:
-                # Get the first available temperature sensor
-                for sensor_name, sensor_data in temps.items():
-                    if sensor_data:
-                        # Try to get coretemp or similar
-                        if 'coretemp' in sensor_name.lower() or 'cpu' in sensor_name.lower():
-                            # Get the first temperature reading
-                            if sensor_data:
-                                system_stats["cpu_temp"] = sensor_data[0].current
-                                break
-                # If no coretemp found, try first sensor
-                if system_stats["cpu_temp"] is None and temps:
-                    first_sensor = next(iter(temps.values()))
-                    if first_sensor:
-                        system_stats["cpu_temp"] = first_sensor[0].current
-        except Exception:
-            # CPU temperature not available
-            system_stats["cpu_temp"] = None
-            
+        from util.system_stats import get_system_stats
+        s = get_system_stats()
+        return {
+            "cpu_percent": s.cpu_percent,
+            "ram_total": None,
+            "ram_available": None,
+            "ram_used": None,
+            "ram_percent": s.memory_percent,
+            "cpu_temp": s.temp_celsius,
+            "error": None,
+        }
     except Exception as exc:
-        system_stats["error"] = f"system_stats_failed: {exc!r}"
-        return system_stats
-
-    return system_stats
-
+        return {
+            "cpu_percent": None,
+            "ram_total": None,
+            "ram_available": None,
+            "ram_used": None,
+            "ram_percent": None,
+            "cpu_temp": None,
+            "error": f"system_stats_failed: {exc!r}",
+        }
 
 def build_snapshot() -> dict[str, Any]:
     gpu = collect_gpu_stats()
