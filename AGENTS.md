@@ -1,5 +1,14 @@
 # AI-Monitor Projektregeln für OpenCode
 
+
+Monitor für GPU, Ollama, Docker auf ai-debian.
+
+## Test
+python -c "from util import system_stats; print(system_stats.get_system_stats())"
+
+## Entry point
+python monitor.py
+
 ## Sprache
 
 - Antworte dem Nutzer immer auf Deutsch.

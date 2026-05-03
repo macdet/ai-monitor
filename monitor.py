@@ -35,7 +35,13 @@ def handle_stop_signal(signum: int, frame: object) -> None:
 
 def collect_ollama_models() -> list[dict[str, Any]]:
     try:
-        with urllib.request.urlopen(OLLAMA_PS_URL, timeout=3) as response:
+        import urllib.request
+        import urllib.error
+        
+        # Use longer timeout to handle network delays
+        timeout = 10
+        
+        with urllib.request.urlopen(OLLAMA_PS_URL, timeout=timeout) as response:
             payload = json.loads(response.read().decode("utf-8"))
 
         models = payload.get("models", [])
@@ -44,7 +50,12 @@ def collect_ollama_models() -> list[dict[str, Any]]:
 
         return []
 
-    except Exception:
+    except urllib.error.Timeout:
+        # Log and return empty list on timeout
+        logger.warning("Ollama API timeout - skipping model collection")
+        return []
+    except Exception as e:
+        logger.error(f"Ollama models collection failed: {e}")
         return []
 
 
