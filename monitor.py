@@ -52,10 +52,10 @@ def collect_ollama_models() -> list[dict[str, Any]]:
 
     except urllib.error.Timeout:
         # Log and return empty list on timeout
-        logger.warning("Ollama API timeout - skipping model collection")
+        print("Ollama API timeout - skipping model collection", file=sys.stderr)
         return []
     except Exception as e:
-        logger.error(f"Ollama models collection failed: {e}")
+        print(f"Ollama models collection failed: {e}", file=sys.stderr)
         return []
 
 
